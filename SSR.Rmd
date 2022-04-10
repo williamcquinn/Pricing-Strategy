@@ -1,0 +1,405 @@
+---
+title: "Shared Social Responsibility"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(radiant)
+Sales <- read_csv("Sales.csv")
+NYOP <- read_csv("NYOP.csv")
+```
+
+##### Report by Group 4
+
+
+#### Flat Rate Pricing
+
+We will begin by considering whether there is a difference between the proportion of purchases between the two flat-rate pricing conditions, `FR` and `FR Charity`.
+
+**a)** Null and alternative hypotheses to compare population proportions  
+
+$H_0 =$ the difference of proportion purchases between `FR` and `FR Charity` is 0  
+$H_a =$ the difference of proportion purchases between `FR` and `FR Charity` is not 0
+
+The data for `FR` and `FR Charity` has been summarized in the table below. 
+
+```{r load, echo=FALSE, message=FALSE, warning=FALSE}
+## filter and sort the dataset
+#library(radiant)
+#library(tidyverse)
+Sales %>%
+  filter(Condition %in% c('FR','FR Charity')) %>%
+  select(Condition:MerchandiseRevenues) %>%
+  dtab(dec = 2, nr = 100) %>% render()
+```
+Appropriate test statistic for the difference of population proportions is given by:  
+$$
+\frac{\bar{p}_1 - \bar{p}_2}{\sqrt{{\frac{\bar{p}_1(1 - \bar{p}_1)}{n_1}} + {\frac{\bar{p}_2(1 - \bar{p}_2)}{n_2}}}}
+$$
+
+Using the test statistic above, we will first calculate $\bar{p}_1$ and $\bar{p}_2$.  
+
+$\bar{p}_1$: sum of **NumberSold** for `FR` divided by the total number of **Riders** for `FR`    
+$\bar{p}_2$: sum of **NumberSold** for `FR Charity` divided by the total number of **Riders** for `FR Charity`  
+  
+$n_1$: sum of **Riders** for `FR`  
+$n_2$: sum of **Riders** for `FR Charity`
+
+We will first load the `Sales.csv` file to RStudio and filter for the 2 fixed rate conditions for our calcultions.
+``` {r fr, message=FALSE, warning=FALSE}
+fr <- Sales %>%
+  filter(Sales$Condition == 'FR' | Sales$Condition == 'FR Charity')
+```
+
+``` {r fr_stats, message=FALSE, warning=FALSE}
+p1 <- (fr[[1,2]] + fr[[2,2]]) / (fr[[1,3]] + fr[[2,3]])
+p2 <- (fr[[3,2]] + fr[[4,2]]) / (fr[[3,3]] + fr[[4,3]])
+
+n1 <- fr[[1,3]] + fr[[2,3]]
+n2 <- fr[[3,3]] + fr[[4,3]]
+
+z1 <- (p1 - p2) / sqrt(((p1 * (1 - p1)) / n1) + ((p2 * (1 - p2)) / n2))
+```
+```{r z1, echo=FALSE, message=FALSE, warning=FALSE}
+z1
+```
+
+**b)** The test statistic resulted in a z-score of $-1.526455$.  
+And our concerned critical value when examining a 5% level is $-1.96$. Since the z-score is greater than the critical value at the 5% interval, we cannot reject the null hypothesis.   
+
+```{r pval_fr, message=FALSE, warning=FALSE}
+p1 <- 2 * pnorm(abs(z1), lower.tail = FALSE)
+```
+```{r p1, echo=FALSE, message=FALSE, warning=FALSE}
+p1
+```
+**c)** The p-value associated with this test statistic was calculated to be $0.1268965$.
+
+**d)** The p-value $0.1268965$ can be interpreted as follows:  
+*there is a $12.7$% chance that the proportion of the population will be observed in the bottom and top $2.5$ tails of the curve.*
+
+Since this value is greater than 5%, we cannot reject the null hypothesis at this given level since there is no statistical significance in the differences between the two samples. And assuming the null hypothesis is true, there is a 12.7% chance we will obtain test results that are at least as extreme as the results actually observed in our sample. 
+
+#### NYOP Pricing  
+
+We will continue by considering whether there is a difference between the proportion of purchases between the two NYOP pricing conditions, `NYOP` and `NYOP Charity`.
+
+**a)** Null and alternative hypotheses to compare population proportions:    
+
+$H_0 =$ no difference of proportion purchases between `NYOP` and `NYOP Charity`  
+$H_a =$ the difference of proportion purchases between `NYOP` and `NYOP Charity` exists
+
+The data for `NYOP` and `NYOP Charity` has been summarized in the table below. 
+
+```{r nyop, message=FALSE, warning=FALSE}
+Sales %>%
+  filter(Condition %in% c('NYOP','NYOP Charity')) %>%
+  select(Condition:MerchandiseRevenues) %>%
+  dtab(dec = 2, nr = 100) %>% render()
+```
+
+Using the same test statistic as above, we will first calculate the $\bar{p}_1$ and $\bar{p}_2$.  
+
+$\bar{p}_1$: sum of **NumberSold** for `NYOP` divided by the total number of **Riders** for `NYOP`    
+$\bar{p}_2$: sum of **NumberSold** for `NYOP Charity` divided by the total number of **Riders** for `NYOP Charity`  
+  
+$n_1$: sum of **Riders** for `NYOP`  
+$n_2$: sum of **Riders** for `NYOP Charity`
+
+```{r nyop_read, message=FALSE, warning=FALSE}
+nyop_total <- Sales %>%
+  filter(Sales$Condition == 'NYOP' | Sales$Condition == 'NYOP Charity')
+``` 
+
+```{r nyop_stats, message=FALSE, warning=FALSE}
+p1 <- (nyop_total[[1,2]] + nyop_total[[2,2]]) / (nyop_total[[1,3]] + nyop_total[[2,3]])
+p2 <- (nyop_total[[3,2]] + nyop_total[[4,2]] + nyop_total[[5,2]]) / (nyop_total[[3,3]] + nyop_total[[4,3]] + nyop_total[[5,3]])
+
+n1 <- nyop_total[[1,3]] + nyop_total[[2,3]]
+n2 <- nyop_total[[3,3]] + nyop_total[[4,3]] + nyop_total[[5,3]]
+
+z2 <- (p1 - p2) / sqrt(((p1 * (1 - p1)) / n1) + ((p2 * (1 - p2)) / n2))
+pval <- 2 * pnorm(abs(z2), lower.tail = FALSE)
+```
+```{r z2, echo=FALSE, message=FALSE, warning=FALSE}
+z2
+```
+**b)** Since the z-score of $22.75$, is greater than the critical value of $1.96$, we reject the null hypothesis and conclude that the difference in proportion of purchases between NYOP and NYOP Charity is significant.  
+
+```{r pval_nyop, echo=FALSE, message=FALSE, warning=FALSE}
+pval
+```
+
+**c)** The p-value associated with the test statistic is $1.44e-114$.  
+
+**d)** Assuming the null hypothesis is true, there is minutely small chance we will obtain test results at least as extreme as the results actually observed in our sample.
+
+#### Radiant Analysis
+
+Now, we will analyze the `NYOP` dataset using Radiant.  
+
+**a)** First, we will load the `NYOP.csv` file to Radiant.  
+```{r rad_load, message=FALSE, warning=FALSE}
+## Load commands
+NYOP <- readr::read_csv("NYOP.csv", n_max = Inf) %>%
+  fix_names() %>%
+  to_fct()
+register("NYOP")
+```
+
+Then create a **UnitPrice** Variable.  
+```{r unitPrice, message=FALSE, warning=FALSE}
+## create new variable(s)
+NYOP <- mutate(NYOP, UnitPrice = Price / Number)
+```
+
+Finally change the type of **Number** to a factor.  
+```{r type_chage, message=FALSE, warning=FALSE}
+## change variable type
+NYOP <- mutate_at(NYOP, .vars = vars(Number), .funs = as_factor)
+```
+
+**c)** Both **Price** and **UnitPrice** can be visualized against the factor variable **Number** using a Box Plot.  
+```{r fig.width = 7, fig.height = 3.5, dpi = 96}
+visualize(
+  NYOP, 
+  xvar = "Number", 
+  yvar = c("Price", "UnitPrice"), 
+  type = "box", 
+  custom = FALSE
+)
+```
+
+These box plots show price against number and **UnitPrice** against **Number**.  
+
+The following observations can be made looking at the two plots:    
+
+Median: Is not as consistent for **Price** vs. **Number** as **UnitPrice** vs. **Number**. The median values observed for **UnitPrice** are fairly consistent, with a slight decrease after 1, but fairly consistent after that. But the values observed for **Price** are more variable.  
+
+Quartiles: The interquartile ranges increase as the number of pictures increases when looking at the **Price**. And this range decreases, for a minimum at 4, before increasing again until 6 when looking at the **UnitPrice**. There is no range for 7, since there was only 1 recorded purchase.  
+
+Skew: As the **Number** increases, we observe a greater positive skew when considering **Price**. But the initially positive skew decreases as the number of pictures increases in the case of **UnitPrice**.  
+
+Outliers: The number of outliers decrease as the **Number** increases for both plots and the relativity in distance from the box decreases as the **Number** increases.  
+
+**c)** The average unit purchase price for `NYOP` and `NYOP Charity` Conditions
+```{r averages, message=FALSE, warning=FALSE}
+result <- explore(
+  NYOP, 
+  vars = "UnitPrice", 
+  byvar = "Condition", 
+  fun = c("n_obs", "mean", "min", "max", "sd"), 
+  nr = Inf
+)
+summary(result)
+```
+
+The difference in average unit price for both conditions is substantial since the mean for `NYOP` is only $1.040$, whereas the mean for `NYOP Charity` is $5.680$. The variability in `NYOP Charity` prices is greater than `NYOP` since the standard deviation for this condition is much larger than that for `NYOP`.  
+
+For formulating a statistical test, we will begin by assuming that the null hypothesis is true, therefore there is no difference in averages between the two populations. 
+
+The appropriate test statistic for the mean of 2 distributions can be calculated as follows:   
+$$
+Z = \frac{\bar{X}_1 - \bar{X}_2 - (\mu_1 - \mu_2)}{\sqrt{{\frac{\sigma_1^2}{n_1}} + {\frac{\sigma_2^2}{n_2}}}}
+$$
+
+Using the average unit purchase prices from above, we can calculate the necessary values for the test statistic above.   
+```{r stats_test1, message=FALSE, warning=FALSE}
+x_1 <- result[[1]][["mean"]][1]
+x_2 <- result[[1]][["mean"]][2]
+sd_1 <- result[[1]][["sd"]][1]
+sd_2 <- result[[1]][["sd"]][2]
+n_1 <- result[[1]][["n_obs"]][1]
+n_2 <- result[[1]][["n_obs"]][2]
+
+z_nyop <- (x_1 - x_2) / (sqrt(((sd_1^2)/n_1) + ((sd_2^2)/n_2)))
+```
+```{r z_nyop, echo=FALSE, message=FALSE, warning=FALSE}
+z_nyop
+```
+
+**d)**Null and alternative hypotheses  
+
+$H_0 =$ The difference in average unit purchase price of `NYOP` and `NYOP Charity` is 0
+$H_a =$ The difference in average unit purchase price of `NYOP` and `NYOP Charity` is not 0
+
+**e)** Using Radiant to perform test computations, we obtain the results below:  
+```{r fig.width = 7, fig.height = 4.31, dpi = 96}
+result <- compare_means(
+  NYOP, 
+  var1 = "Condition", 
+  var2 = "UnitPrice"
+)
+summary(result, show = TRUE)
+plot(result, plots = "scatter", custom = FALSE)
+```
+
+Our calculated t-value matched the t-value output by Radiant.   
+
+p-value is less than 5% (0.05), so we reject the null hypothesis.  
+p-value is less than 0.01 (1%), meaning that the difference between the mean values is very significant. So the likelihood of a type 1 error misclassification is very low.  
+
+This scatter plot illustrates that `NYOP Charity` has a higher maximum value and variability in price, so the mean is much higher than that of `NYOP`, which has values grouped closely together resulting in a low mean. From the means of the scatter plot, it is clear to see that the proportions are not equal. The visibly large difference in means of the two conditions also supports our rejection of the null hypothesis, since the difference in means is clearly more than $0$ and the values are more than $5$% apart.  
+
+The distribution of values around the mean further supports the conclusion that the misclassification  of a type 1 error is very low. 
+
+**f)** We will now use filtering to investigate differences between 1 and 6 pictures.  
+
+Results for 1 picture:  
+```{r, message=FALSE, warning=FALSE}
+result1 <- explore(
+  NYOP, 
+  vars = "UnitPrice", 
+  byvar = "Condition", 
+  fun = c("n_obs", "mean", "min", "max", "sd"), 
+  data_filter = "Number == 1", 
+  nr = Inf
+)
+summary(result1)
+```
+
+Result for 6 pictures:  
+```{r, message=FALSE, warning=FALSE}
+result6 <- explore(
+  NYOP, 
+  vars = "UnitPrice", 
+  byvar = "Condition", 
+  fun = c("n_obs", "mean", "min", "max", "sd"), 
+  data_filter = "Number == 6", 
+  nr = Inf
+)
+summary(result6)
+```
+
+Looking at these result, we can conclude that there is more variability in people that chose 1 picture as opposed to those that bought 6 pictures since the volume of sales for 1 picture is much higher. The mean also differs substantially between 1 picture and 6 pictures, thus supporting our rejection of the null hypothesis. 
+
+The minimum and maximum values have a greater range at 1 picture since the sample size is much greater than that of 6 pictures, thus leading to more variability as we concluded initially. 
+
+```{r stats_test, message=FALSE, warning=FALSE}
+x_16 <- result6[[1]][["mean"]][1]
+x_26 <- result6[[1]][["mean"]][2]
+sd_16 <- result6[[1]][["sd"]][1]
+sd_26 <- result6[[1]][["sd"]][2]
+n_16 <- result6[[1]][["n_obs"]][1]
+n_26 <- result6[[1]][["n_obs"]][2]
+
+z_nyop6 <- (x_16 - x_26) / (sqrt(((sd_16^2)/n_16) + ((sd_26^2)/n_26)))
+```
+```{r z_nyop6, echo=FALSE, message=FALSE, warning=FALSE}
+z_nyop6
+```
+
+There are less people buying 6 pictures (only 9) compared to 1 picture (over 1000), so the sample sizes are drastically different, thus there is more variability. 
+
+Our  calculated values are the same as that produced by Radiant, which is surprising given the low value of $n$. Since the sample size is so small, we would expect more variability in the t-score. But we calculated a value very close to the one on Radiant. 
+
+#### Economics  
+**a)** We will first compute the average daily profit under each of the 4 pricing strategies.
+
+```{r econ_a, message=FALSE, warning=FALSE}
+# FR only
+fr_only <- Sales %>%
+  filter(Sales$Condition == 'FR') 
+
+fr_char <- Sales %>%
+  filter(Sales$Condition == 'FR Charity')
+
+for (i in 1:nrow(fr_only)) {
+  fr_total <- sum(fr_only$NumberSold) * (12.95 - 1.2)
+}
+
+avg_fr <- fr_total/sum(Sales$Condition == 'FR')
+```
+
+```{r econ_a2, message=FALSE, warning=FALSE}
+# FR with charity
+for (i in 1:nrow(fr_char)) {
+  fr_char_total <- sum((fr_char$NumberSold * 0.5 * 12.95) - (fr_char$NumberSold * 1.2))
+}
+
+avg_fr_char <- fr_char_total/sum(Sales$Condition == 'FR Charity')
+```
+
+```{r econ_a3, message=FALSE, warning=FALSE}
+# NYOP
+nyop_only <- NYOP %>%
+  filter(NYOP$Condition == 'NYOP')
+
+nyop_char <- NYOP %>%
+  filter(NYOP$Condition == 'NYOP Charity')
+
+nyop_totalp <- sum(nyop_only$Price)
+avg_nyop <- (nyop_totalp - sum(as.numeric(nyop_only$Number))*1.2)/2
+```
+
+```{r econ_a4, message=FALSE, warning=FALSE}
+#NYOP Charity
+nyop_char_total <- sum(nyop_char$Price)
+avg_nyop_char <- (nyop_char_total*0.5 - sum(as.numeric(nyop_char$Number))*1.2)/3
+```
+
+```{r a_print, echo=FALSE, message=FALSE, warning=FALSE}
+cat("Daily profit for fixed price: $", avg_fr, sep='')
+cat("Daily profit for fixed price with charity: $", avg_fr_char, sep='')
+cat("Daily profit for name your own price: $", avg_nyop, sep='')
+cat("Daily profit for name your own price with charity: $", avg_nyop_char, sep='')
+```
+
+**b)** The most profitable strategy, based on the average daily profit, is `NYOP Charity`.   
+
+Ranking of the strategies in terms of profits:  
+1) `NYOP Charity`  
+2) `FR`  
+3) `FR Charity`  
+4) `NYOP`  
+
+**c)** The societal profits can be defined as follows:  
+```
+Societal profits = theme park profit + revenue going to charity
+```
+
+Therefore, the societal profit for `FR` and `NYOP` are the daily park profits calculated above.
+
+For the 2 conditions with a charity model, the values can be calculated.
+
+```{r societal, message=FALSE, warning=FALSE}
+fr_char_total <- (sum(as.numeric(fr_char$NumberSold)) * 12.95 - sum(as.numeric(fr_char$NumberSold)) * 1.2)/2
+nyop_char_total <- (nyop_char_total - sum(as.numeric(nyop_char$Number)*1.2))/3
+```
+```{r c_print, echo=FALSE, message=FALSE, warning=FALSE}
+cat("Average societal profit for fixed price: $", avg_fr, sep='')
+cat("Average societal profit for name your own price: $", avg_nyop, sep='')
+cat("Average societal profit for fixed price with charity: $", fr_char_total, sep='')
+cat("Average societal profit for name your own price with charity: $", nyop_char_total, sep='')
+```
+
+The ranking of average daily societal profits in this case:  
+1) `NYOP Charity`    
+2) `FR Charity`  
+3) `FR`  
+4) `NYOP`  
+
+**d)** The leading strategy in terms of societal profit is `NYOP Charity`.  
+The additional profits generated, over the span of the entire year (assuming the year has 365 days), can seen by this model below:   
+
+``` {r profit_year, message=FALSE, warning=FALSE}
+fr_year <- avg_fr * 365
+fr_char_year <- fr_char_total * 365
+nyop_year <- avg_nyop * 365
+nyop_char_year <- nyop_char_total * 365
+```
+```{r profit_change, echo = FALSE, message=FALSE, warning=FALSE}
+cat("FR: $", (nyop_char_year - fr_year), sep='')
+cat("FR Charity: $", (nyop_char_year - fr_char_year), sep='')
+cat("NYOP: $", (nyop_char_year - nyop_year), sep='')
+```
+
+**e)** Merchandise sales increased when there was charity involved.  
+
+This was a trend after analyzing the merchandise sales data, when we observed that the strategies, when compared to their non-charity counterparts (`FR` vs `FR Charity` and `NYOP` vs `NYOP Charity`). Merchandise sales should not be a concern to societal profit if the strategy that is being implemented contains a charity component. This will increase merchandise revenue which will cause an increase in park profit, but it will also increase charity contributions, through the picture sales revenue, which will ultimately increase societal profits. 
+
+If we use a strategy that does not include charity, merchandise revenue will be less than its charity counterpart. This will result in a decreased park profit and smaller charity profit, which amounts to a smaller societal profit. Therefore, merchandise sales are a concern if an non-charity strategy is being implemented.
